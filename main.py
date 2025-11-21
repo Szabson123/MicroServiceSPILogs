@@ -29,20 +29,20 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/hello/")
+@app.get("/micro/hello/")
 def hello():
     return {"message": "Hello working"}
 
 
-@app.get("/working-test/")
+@app.get("/micro/working-test/")
 def working_test_api(db=Depends(get_db)):
     return working_test(db)
 
 
-@app.get("/api/new-product-poke/{id}/")
+@app.get("/micro/new-product-poke/{id}/")
 def new_product_poke(id: int):
     return id
 
-@app.get("/api/fetch_ASM_databases/")
+@app.get("/micro/fetch_ASM_databases/")
 def test_asm(db=Depends(get_db)):
     return fetch_ASM_databases(db)
