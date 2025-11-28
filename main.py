@@ -15,11 +15,8 @@ async def lifespan(app: FastAPI):
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        print("Połączone z bazą danych")
     except Exception as e:
-        print("Błąd połączenia z DB:", e)
-
-    # URUCHAMIASZ SCHEDULER TYLKO RAZ I W ODDZIELNYM WĄTKU
+        ...
     threading.Thread(target=run_scheduler, daemon=True).start()
 
     # FastAPI gotowe

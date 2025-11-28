@@ -189,7 +189,6 @@ def save_new_spi_logs(db, line_id, spi_rows, full_sn):
     # 6) jeśli aplikacja była OFF > 300s → traktujemy jak start:
     #    ignorujemy cały gap i logujemy tylko ostatni stan
     if offline_too_long:
-        print(f"[INFO] Offline >300s na linii {line_id}. Biorę tylko ostatni log IDNO={newest_log['IDNO']}.")
         new_logs = [newest_log]
 
     # 7) zapis do naszej bazy

@@ -6,7 +6,7 @@ from .utils import working_test
 
 logger = logging.getLogger("scheduler")
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler("scheduler.log")
+handler = logging.FileHandler(r"C:\logs\MicroServiceSPILogs\scheduler.log")
 handler.setFormatter(logging.Formatter("%(asctime)s - %(message)s"))
 logger.addHandler(handler)
 
