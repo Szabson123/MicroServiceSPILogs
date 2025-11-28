@@ -210,34 +210,36 @@ def save_new_spi_logs(db, line_id, spi_rows, full_sn):
     return len(new_logs), newest_fixed
 
 def handle_no_product_case(db, line_id, spi_rows):
+    # 1) brak logów z maszyny → maszyna stoi → IGNORE
+    if not spi_rows:
+        return "ignore"
+
+    # 2) ostatni zapisany log w naszej bazie
     last_log_time = db.execute(text("""
         SELECT MAX(time_date)
         FROM checkprocess_logfromspi
         WHERE machine_name_id = :line_id
     """), {"line_id": line_id}).scalar()
 
-    if not spi_rows:
-        return "ignore"
-
-    newest_spi = max(spi_rows, key=lambda r: r["IDNO"])
-
-    # --- SPI time always naive (local)
-    spi_time = datetime.now()
-
-    # brak naszych logów → ignore (pierwszy raz)
+    # 3) brak naszego logu → pierwszy start → IGNORE
     if last_log_time is None:
         return "ignore"
 
-    # --- normalizacja obu dat ---
-    # jeśli last_log_time ma timezone → dodajemy timezone do spi_time
-    if last_log_time.tzinfo is not None and last_log_time.tzinfo.utcoffset(last_log_time) is not None:
-        spi_time = spi_time.replace(tzinfo=last_log_time.tzinfo)
-    else:
-        # jeśli last_log_time jest naive → oba muszą być naive
-        last_log_time = last_log_time.replace(tzinfo=None)
+    # 4) policz new logs → ważne!
+    last_fixed = db.execute(text("""
+        SELECT MAX(fixed_id)
+        FROM checkprocess_logfromspi
+        WHERE machine_name_id = :line_id
+    """), {"line_id": line_id}).scalar() or 0
 
-    delta = spi_time - last_log_time
-    seconds = delta.total_seconds()
+    spi_count = len([r for r in spi_rows if r["IDNO"] > last_fixed])
+
+    # 5) jeśli maszyna stoi (spi_count == 0) → IGNORE
+    if spi_count == 0:
+        return "ignore"
+
+    # 6) sprawdź czas
+    seconds = (datetime.now() - last_log_time).total_seconds()
 
     if seconds > 90:
         return "kill"
@@ -250,7 +252,6 @@ def get_kill_flag(db, line_id):
         FROM checkprocess_apptokill
         WHERE line_name_id = :line_id
     """), {"line_id": line_id}).scalar()
-
 
 
 def handle_asm_line(db: Session, item):
