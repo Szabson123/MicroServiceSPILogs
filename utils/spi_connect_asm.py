@@ -5,7 +5,6 @@ from config import settings
 
 def fetch_new_asm_logs(database_host: str, last_fixed: int):
     try:
-        # 1️⃣ Połączenie do master tylko po DBName
         conn = pyodbc.connect(
             f"DRIVER={{SQL Server}};"
             f"SERVER={database_host};"

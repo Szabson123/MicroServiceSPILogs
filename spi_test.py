@@ -1,8 +1,6 @@
 import pyodbc
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from config import settings
-
 
 def fetch_new_spi_logs(database_name: str, last_fixed: int):
     conn = pyodbc.connect(
@@ -16,10 +14,19 @@ def fetch_new_spi_logs(database_name: str, last_fixed: int):
     cursor = conn.cursor()
 
     table_now = f"Pcb{datetime.now().strftime('%Y%m')}"
-    cursor.execute(f"SELECT MAX(IDNO) FROM dbo.{table_now}")
+
+    try:
+        cursor.execute(f"SELECT MAX(IDNO) FROM dbo.{table_now}")
+    except pyodbc.ProgrammingError:
+        cursor.close()
+        conn.close()
+        return [], 0
+
     spi_max_idno = cursor.fetchone()[0]
 
     if spi_max_idno is None:
+        cursor.close()
+        conn.close()
         return [], 0
 
     if spi_max_idno < last_fixed:
