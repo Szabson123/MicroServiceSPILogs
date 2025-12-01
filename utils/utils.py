@@ -213,22 +213,17 @@ def save_new_spi_logs(db, line_id, spi_rows, full_sn):
     return len(new_logs), newest_fixed
 
 def handle_no_product_case(db, line_id, spi_rows):
-    # 1) brak logów z maszyny → maszyna stoi → IGNORE
-    if not spi_rows:
-        return "ignore"
-
-    # 2) ostatni zapisany log w naszej bazie
     last_log_time = db.execute(text("""
         SELECT MAX(time_date)
         FROM checkprocess_logfromspi
         WHERE machine_name_id = :line_id
     """), {"line_id": line_id}).scalar()
 
-    # 3) brak naszego logu → pierwszy start → IGNORE
     if last_log_time is None:
         return "ignore"
 
-    # 4) policz new logs → ważne!
+    last_log_time = last_log_time.replace(tzinfo=None)
+
     last_fixed = db.execute(text("""
         SELECT MAX(fixed_id)
         FROM checkprocess_logfromspi
@@ -237,11 +232,9 @@ def handle_no_product_case(db, line_id, spi_rows):
 
     spi_count = len([r for r in spi_rows if r["IDNO"] > last_fixed])
 
-    # 5) jeśli maszyna stoi (spi_count == 0) → IGNORE
     if spi_count == 0:
         return "ignore"
 
-    # 6) sprawdź czas
     seconds = (datetime.now() - last_log_time).total_seconds()
 
     if seconds > 90:
