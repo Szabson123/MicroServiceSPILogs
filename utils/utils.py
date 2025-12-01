@@ -167,11 +167,12 @@ def save_new_spi_logs(db, line_id, spi_rows, full_sn):
 
     offline_too_long = False
     if last_log_time:
-        now = datetime.now(last_log_time.tzinfo)
+        # normalize timestamps (avoid naive vs aware mismatch)
+        last_log_time = last_log_time.replace(tzinfo=None)
+        now = datetime.now()
         delta = now - last_log_time
         offline_too_long = delta.total_seconds() > 300
     else:
-        # brak logów = pierwszy start
         offline_too_long = True
 
     # 3) wykrycie nowego miesiąca (IDNO się zresetowało)
