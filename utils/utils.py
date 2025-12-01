@@ -128,15 +128,17 @@ def working_test(db: Session):
     return response
 
 
-def add_cycles_to_sito(db, line_id, spi_count):
+def add_cycles_to_sito(db, group_id, spi_count):
     db.execute(text("""
-        UPDATE checkprocess_productobject
+        UPDATE checkprocess_productobject po
         SET sito_cycles_count = sito_cycles_count + :count
-        WHERE current_place_id = :line_id
-        AND "end" = FALSE
+        FROM checkprocess_place p
+        WHERE po.current_place_id = p.id
+        AND p.group_id = :group_id
+        AND po."end" = FALSE
     """), {
         "count": spi_count,
-        "line_id": line_id
+        "group_id": group_id
     })
 
     db.commit()
