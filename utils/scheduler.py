@@ -22,7 +22,7 @@ async def scheduler_worker():
             logger.info(f"Wynik: {result}")
 
         except Exception as e:
-            logger.error(f"Błąd w schedulerze: {e}")
+            logger.error(f"Blad w schedulerze: {e}")
 
         finally:
             db.close()

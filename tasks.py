@@ -20,7 +20,7 @@ def scheduled_task():
         logger.info(f"Wynik zadania: {result}")
 
     except Exception as e:
-        logger.error(f"Błąd w zadaniu: {e}")
+        logger.error(f"Blad w zadaniu: {e}")
 
     finally:
         db.close()
